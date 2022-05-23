@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %} Home {%endblock%}
+
+{% block content %}
+    <div>
+    {% if info %}
+            <h1>{{ info }}</h1>
+    {% endif %}
+
+    {% for book in books %}
+        <div>    
+            <h3>Title: {{ book.title }}</h3>
+            Authors: <b>{{ ', '.join(book.authors) }}</b>
+            <br>
+            Year: {{ book.published_year }}
+            <br>
+            <br>
+            Acquired: {{ book.acquired }}
+        </div>
+        <br>
+        <div>
+            {% if book.thumbnail %}
+                <img src={{ book.thumbnail }} alt="No image">
+            {% else %}
+            No image
+            {% endif %}
+        </div>
+        <hr>
+    {% endfor %}
+
+    </div>
+
+{% endblock %}
