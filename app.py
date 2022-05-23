@@ -1,5 +1,4 @@
 """BookStore Rest API."""
-from enum import unique
 import requests
 
 from flask import Flask, render_template, request, jsonify, url_for
