@@ -223,39 +223,46 @@ def import_google_books():
     if response.status_code == 200:
         content = response.json()
         total_items = content['totalItems']
+        google_books_ids = []
         print(total_items)
         count = 0
-        for _ in range(0, total_items, 10):
-            for i in range(10):
-                quest = content['items'][i]
-                ext_id = quest['id']
-                title = quest['volumeInfo']['title']
-                try:
-                    authors = quest['volumeInfo']['authors']
-                except KeyError:
-                    authors = []
-                acquired = False
-                try:
-                    published_year = quest['volumeInfo']['publishedDate'][:4]
-                except KeyError:
-                    published_year = None
-                try:
-                    thumbnail = quest['volumeInfo']['imageLinks']['thumbnail']
-                except KeyError:
-                    thumbnail = ''
+        for item in range(0, total_items, 40):
+            url = f'https://www.googleapis.com/books/v1/volumes?q=inauthor:{author}&startIndex={item}&maxResults=40'
+            response = requests.get(url) 
+            content = response.json()
+            for i in range(40):
+                google_book_id = content['items'][i]['id']
+                if google_book_id not in google_books_ids:
+                    quest = content['items'][i]
+                    ext_id = quest['id']
+                    title = quest['volumeInfo']['title']
+                    try:
+                        authors = quest['volumeInfo']['authors']
+                    except KeyError:
+                        authors = []
+                    acquired = False
+                    try:
+                        published_year = quest['volumeInfo']['publishedDate'][:4]
+                    except KeyError:
+                        published_year = None
+                    try:
+                        thumbnail = quest['volumeInfo']['imageLinks']['thumbnail']
+                    except KeyError:
+                        thumbnail = ''
 
-                book = BookStore(title=title,
-                                 ext_id=ext_id,
-                                 authors=authors,
-                                 acquired=acquired,
-                                 published_year=published_year,
-                                 thumbnail=thumbnail)
-                db.session.add(book)
-                db.session.commit()
+                    book = BookStore(title=title,
+                                    ext_id=ext_id,
+                                    authors=authors,
+                                    acquired=acquired,
+                                    published_year=published_year,
+                                    thumbnail=thumbnail)
+                    db.session.add(book)
+                google_books_ids.append(google_book_id)
                 count += 1
                 if count == total_items:
                     break
-
+        print(count)
+        db.session.commit()
         return jsonify({'imported': count})
 
     return jsonify({'import': False})
